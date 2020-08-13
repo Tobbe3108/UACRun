@@ -18,7 +18,7 @@ namespace Persistence
       using var cnn = SimpleDbConnection();
       cnn.Open();
       var result = cnn.Query<App>(
-        $@"SELECT Name, AppUserModelId
+        $@"SELECT AppUserModelId
             FROM App
             WHERE Id = @id", new { id }).FirstOrDefault();
       return result;
@@ -29,10 +29,15 @@ namespace Persistence
       if (!File.Exists(DbFile)) return null;
       using var cnn = SimpleDbConnection();
       cnn.Open();
-      var result = cnn.Query<App>(
-        $@"SELECT Id, Name
-            FROM App").ToList();
-      return result;
+      var sql = $@"SELECT Id, Name, Icon FROM App";
+      var apps = cnn.Query<dynamic>(sql)
+        .Select(item => new App()
+        {
+          Id = item.Id,
+          Name = item.Name,
+          IconBytes = item.Icon
+        }).ToList();
+      return apps;
     }
 
     private static async Task SaveApps(IEnumerable<App> apps)
@@ -49,14 +54,15 @@ namespace Persistence
           tempParams.Add("@Id", u.Id, DbType.Int32, ParameterDirection.Input);
           tempParams.Add("@Name", u.Name, DbType.String, ParameterDirection.Input);
           tempParams.Add("@AppUserModelId", u.AppUserModelId, DbType.String, ParameterDirection.Input);
+          tempParams.Add("@Icon", u.IconBytes, DbType.Binary, ParameterDirection.Input);
           return tempParams;
         });
- 
+        
         await cnn.ExecuteAsync(
-          $"INSERT INTO App (Name, AppUserModelId) VALUES (@Name, @AppUserModelId)",
+          $"INSERT INTO App (Name, AppUserModelId, Icon) VALUES (@Name, @AppUserModelId, @Icon)",
           parameters).ConfigureAwait(false);
     }
-
+    
     public async Task UpdateDatabase()
     {
       if (File.Exists(DbFile))
@@ -68,8 +74,7 @@ namespace Persistence
       }
 
       CreateDatabase();
-      
-      var helper = new AppHelper();
+
       await SaveApps(AppHelper.ReadAllInstalledApps());
     }
     
@@ -82,7 +87,8 @@ namespace Persistence
             (
               Id INTEGER primary key AUTOINCREMENT,
               Name VARCHAR(255) not null,
-              AppUserModelId VARCHAR(255) not null
+              AppUserModelId VARCHAR(255) not null,
+              Icon BLOB
             )");
     }
   }
