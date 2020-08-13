@@ -1,10 +1,12 @@
-﻿using Domain.Models;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Domain.Models;
 
 namespace Application.Interfaces
 {
   public interface ICustomerRepository
   {
     App GetApp(long guid);
-    void SaveApp(App app);
+    List<App> GetAllApps();
   }
 }
