@@ -12,6 +12,7 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
+      <PackageReference Include="protobuf-net.Core" Version="3.0.29" />
     </ItemGroup>
 
 </Project>
