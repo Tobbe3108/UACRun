@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
+        <OutputType>WinExe</OutputType>
         <TargetFramework>netcoreapp3.1</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="NetMQ" Version="4.0.1.4" />
       <PackageReference Include="PipeMethodCalls" Version="2.0.0" />
       <PackageReference Include="protobuf-net" Version="3.0.29" />
     </ItemGroup>
