@@ -17,12 +17,7 @@ namespace TerminalLauncher
         Console.WriteLine("You must specify a path!");
         return;
       }
-      if (args.Length > 1)
-      {
-        Console.WriteLine("Only specify one path!");
-        return;
-      }
-      
+
       var process = Process.GetProcessesByName("RunnerService");
       var path = @$"{Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName)}\RunnerService.exe";
       if (process.Length == 0)
@@ -45,9 +40,10 @@ namespace TerminalLauncher
       }
       
       Thread.Sleep(100);
+      
       using var client = new UdpClient();
       client.Connect(string.Empty, 9000);
-      var bytes = Encoding.Default.GetBytes(args.First());
+      var bytes = Encoding.Default.GetBytes(string.Join("|;|", args));
       client.Send(bytes, bytes.Length);
     }
   }
