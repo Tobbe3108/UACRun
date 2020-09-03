@@ -1,10 +1,8 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Microsoft.VisualBasic;
 
 namespace RunnerService
 {
@@ -21,19 +19,21 @@ namespace RunnerService
         var data = Encoding.Default.GetString(bytes);
         var args = data.Split("|;|");
         ProcessStartInfo info;
-        if (args.First().Contains(".msi"))
+        var path = args.First();
+        
+        if (path.Contains(".msi"))
         {
           //Open msi with msiexec
           info = new ProcessStartInfo
           {
             FileName = "msiexec.exe",
-            Arguments = $"/i \"{data}\" ALLUSERS=1"
+            Arguments = $"/i \"{path}\""
           };
         }
         else
         {
           //Add path to process filename
-          info = new ProcessStartInfo(args.First())
+          info = new ProcessStartInfo(path)
           {
             UseShellExecute = true
           };
