@@ -13,8 +13,6 @@ namespace TerminalLauncher
   {
     private static void Main(string[] args)
     {
-      //args = new[] {@"T:\Tobbe\SetupSmartLookup.msi"};
-      
       if (args.Length == 0)
       {
         Console.WriteLine("You must specify a path!");
@@ -46,7 +44,16 @@ namespace TerminalLauncher
       
       using var client = new UdpClient();
       client.Connect(string.Empty, 9000);
-      var uncPath= LocalToUNC(args.First());
+
+      if (args.Length > 1)
+      {
+        for (var index = 1; index < args.Length; index++)
+        {
+          args[0] = args[0] += " " + args[index];
+        }
+      }
+      
+      var uncPath= LocalToUnc(args.First());
       if (!string.IsNullOrEmpty(uncPath))  args[0] = uncPath;
       var bytes = Encoding.Default.GetBytes(string.Join("|;|", args));
       client.Send(bytes, bytes.Length);
@@ -58,7 +65,7 @@ namespace TerminalLauncher
     );
 
     // I think max length for UNC is actually 32,767
-    static string LocalToUNC(string localPath, int maxLen = 2000)
+    private static string LocalToUnc(string localPath, int maxLen = 2000)
     {
       IntPtr lpBuff;
 
@@ -74,13 +81,11 @@ namespace TerminalLauncher
 
       try
       {
-        int res = WNetGetUniversalNameA(localPath, 1, lpBuff, ref maxLen);
+        var res = WNetGetUniversalNameA(localPath, 1, lpBuff, ref maxLen);
 
-        if (res != 0)
-          return null;
+        return res != 0 ? null : Marshal.PtrToStringAnsi(Marshal.ReadIntPtr(lpBuff));
 
         // lpbuff is a structure, whose first element is a pointer to the UNC name (just going to be lpBuff + sizeof(int))
-        return Marshal.PtrToStringAnsi(Marshal.ReadIntPtr(lpBuff));
       }
       catch (Exception)
       {
